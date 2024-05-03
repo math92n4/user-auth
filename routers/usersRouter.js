@@ -23,6 +23,10 @@ router.post('/api/user', async (req, res) => {
         return res.status(400).send({ data: "Password is missing" })
     }
 
+    if(await getUserByEmail(email)) {
+        return res.status(409).send({ data: "Email already exist" })
+    }
+
     const encryptedPassword = await hashPassword(password)
     const result = await createUser(email, encryptedPassword)
     const sentEmail = await sendWelcome(email);
