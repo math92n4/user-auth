@@ -42,7 +42,7 @@ router.post('/api/login', async (req, res) => {
     const token = generateAccessToken(email)
     res.cookie('jwt', token, {
         httpOnly: true,
-        maxAge: 30000
+        maxAge: 300000
     })
 
     res.send('You are logged on')
