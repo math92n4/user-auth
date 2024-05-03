@@ -2,6 +2,7 @@ import { Router } from "express";
 import { getUserByEmail, createUser } from "../db/database.js";
 import { hashPassword, checkPassword } from "../util/password.js"
 import { generateAccessToken, authenticateToken } from "../util/jwt.js";
+import { sendWelcome } from "../util/mail.js";
 
 const router = Router();
 
@@ -13,8 +14,7 @@ router.get('/api/user/:email', async (req, res) => {
 
 router.post('/api/user', async (req, res) => {
     const { email, password } = req.body;
-    const encryptedPassword = await hashPassword(password)
-
+    
     if(!email) {
         return res.status(400).send({ data: "Email is missing" })
     }
@@ -23,7 +23,9 @@ router.post('/api/user', async (req, res) => {
         return res.status(400).send({ data: "Password is missing" })
     }
 
+    const encryptedPassword = await hashPassword(password)
     const result = await createUser(email, encryptedPassword)
+    const sentEmail = await sendWelcome(email);
     res.send({ data: result.id })
 })
 
@@ -43,7 +45,7 @@ router.post('/api/login', async (req, res) => {
         maxAge: 30000
     })
 
-    res.send('success')
+    res.send('You are logged on')
 })
 
 router.get('/api/user', async (req, res) => {
@@ -55,7 +57,7 @@ router.get('/api/user', async (req, res) => {
         }
 
         const { id, email } = await getUserByEmail(claims)
-        
+
         const user = {
             id: id,
             email: email
